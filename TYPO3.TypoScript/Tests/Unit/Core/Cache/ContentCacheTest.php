@@ -122,7 +122,6 @@ class ContentCacheTest extends UnitTestCase
         $contentCache = new ContentCache();
         $mockSecurityContext = $this->createMock('TYPO3\Flow\Security\Context');
         $this->inject($contentCache, 'securityContext', $mockSecurityContext);
-        $this->inject($contentCache, 'parser', new CacheSegmentParser());
 
         $mockCache = $this->createMock('TYPO3\Flow\Cache\Frontend\FrontendInterface');
         $this->inject($contentCache, 'cache', $mockCache);
@@ -143,7 +142,6 @@ class ContentCacheTest extends UnitTestCase
         $contentCache = new ContentCache();
         $mockSecurityContext = $this->createMock('TYPO3\Flow\Security\Context');
         $this->inject($contentCache, 'securityContext', $mockSecurityContext);
-        $this->inject($contentCache, 'parser', new CacheSegmentParser());
 
         $mockCache = $this->createMock('TYPO3\Flow\Cache\Frontend\FrontendInterface');
         $this->inject($contentCache, 'cache', $mockCache);
@@ -178,7 +176,6 @@ class ContentCacheTest extends UnitTestCase
         $mockPropertyMapper = $this->createMock('TYPO3\Flow\Property\PropertyMapper');
         $mockPropertyMapper->expects($this->any())->method('convert')->will($this->returnArgument(0));
         $this->inject($contentCache, 'propertyMapper', $mockPropertyMapper);
-        $this->inject($contentCache, 'parser', new CacheSegmentParser());
 
         $mockCache = $this->createMock('TYPO3\Flow\Cache\Frontend\FrontendInterface');
         $this->inject($contentCache, 'cache', $mockCache);
@@ -206,8 +203,6 @@ class ContentCacheTest extends UnitTestCase
         $mockPropertyMapper = $this->createMock('TYPO3\Flow\Property\PropertyMapper');
         $mockPropertyMapper->expects($this->any())->method('convert')->will($this->returnArgument(0));
         $this->inject($contentCache, 'propertyMapper', $mockPropertyMapper);
-
-        $this->inject($contentCache, 'parser', new CacheSegmentParser());
 
         $mockContext = $this->getMockBuilder('TYPO3\Flow\Core\ApplicationContext')->disableOriginalConstructor()->getMock();
         $cacheBackend = new \TYPO3\Flow\Cache\Backend\TransientMemoryBackend($mockContext);
