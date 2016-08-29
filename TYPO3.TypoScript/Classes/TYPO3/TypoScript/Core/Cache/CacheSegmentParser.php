@@ -22,22 +22,32 @@ class CacheSegmentParser
     /**
      * @var string
      */
-    protected $randomCacheMarker;
+    protected $randomCacheMarker = '';
 
     /**
      * @var string
      */
-    protected $output;
+    protected $output = '';
+
+    /**
+     * @var string
+     */
+    protected $outerSegmentContent;
 
     /**
      * @var array
      */
-    protected $cacheSegments;
+    protected $cacheSegments = [];
 
     /**
      * @var integer
      */
     protected $uncachedPartCount = 0;
+
+    /**
+     * @var string
+     */
+    protected $content;
 
     /**
      * Parses the given content and extracts segments by searching for start end end markers. Those segments can later
@@ -52,12 +62,8 @@ class CacheSegmentParser
     public function __construct($content, $randomCacheMarker = '')
     {
         $this->randomCacheMarker = $randomCacheMarker;
-        $this->uncachedPartCount = 0;
-        $this->output = '';
-        $this->cacheSegments = [];
         $this->content = $content;
         $this->outerSegmentContent = '';
-
         $currentPosition = 0;
         $nextStartPosition = $this->calculateNextTokenPosition($currentPosition, ContentCache::CACHE_SEGMENT_START_TOKEN);
         while ($nextStartPosition !== false) {
@@ -76,9 +82,12 @@ class CacheSegmentParser
             throw new Exception(sprintf('Exceeding segment end token after position %d', $currentPosition), 1391853689);
         }
 
-        $part = $this->extractContent($this->calculateCurrentPosition($result['endPosition']));
+        $currentPosition = isset($result['endPosition']) ? $this->calculateCurrentPosition($result['endPosition']) : $currentPosition;
+        $part = $this->extractContent($currentPosition);
         $this->output .= $part;
         $this->outerSegmentContent .= $part;
+        // we no longer need the content
+        unset($this->content);
     }
 
     /**
@@ -96,13 +105,12 @@ class CacheSegmentParser
      * @param integer $currentPosition
      * @return array
      * @throws Exception
-     * @throws \Exception
      */
     protected function parseSegment($currentPosition)
     {
         $nextStartPosition = $this->calculateNextTokenPosition($currentPosition, ContentCache::CACHE_SEGMENT_START_TOKEN);
         if ($nextStartPosition !== $currentPosition) {
-            throw new Exception(sprintf('The current position (%d) is not the start of a segment, next start position $d', $currentPosition, $nextStartPosition), 1472464124);
+            throw new Exception(sprintf('The current position (%d) is not the start of a segment, next start position %d', $currentPosition, $nextStartPosition), 1472464124);
         }
 
         $segmentData = [
@@ -165,7 +173,7 @@ class CacheSegmentParser
      * @param array $segmentData
      * @return array
      */
-    protected function extractContentAndSubSegments($currentPosition, $segmentData)
+    protected function extractContentAndSubSegments($currentPosition, array $segmentData)
     {
         $nextStartPosition = $this->calculateNextTokenPosition($currentPosition, ContentCache::CACHE_SEGMENT_START_TOKEN);
         $nextEndPosition = $this->calculateNextTokenPosition($currentPosition, ContentCache::CACHE_SEGMENT_END_TOKEN);
@@ -202,6 +210,12 @@ class CacheSegmentParser
         return $segmentData;
     }
 
+    /**
+     * Make sure that we keep only necessary information for caching and strip all internal segment data.
+     *
+     * @param array $segmentData
+     * @return array
+     */
     protected function reduceSegmentDataToCacheRelevantInformation(array $segmentData)
     {
         return [
