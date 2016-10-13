@@ -65,12 +65,6 @@ class ContentCache
     const SEGMENT_TYPE_DYNAMICCACHED = 'dynamiccached';
 
     /**
-     * @Flow\Inject
-     * @var CacheSegmentParser
-     */
-    protected $parser;
-
-    /**
      * @var StringFrontend
      * @Flow\Inject
      */
@@ -218,10 +212,10 @@ class ContentCache
      */
     public function processCacheSegments($content, $storeCacheEntries = true)
     {
-        $this->parser->extractRenderedSegments($content, $this->randomCacheMarker);
+        $parser = new CacheSegmentParser($content, $this->randomCacheMarker);
 
         if ($storeCacheEntries) {
-            $segments = $this->parser->getCacheSegments();
+            $segments = $parser->getCacheSegments();
 
             foreach ($segments as $segment) {
                 $metadata = explode(';', $segment['metadata']);
@@ -234,7 +228,7 @@ class ContentCache
             }
         }
 
-        return $this->parser->getOutput();
+        return $parser->getOutput();
     }
 
     /**
